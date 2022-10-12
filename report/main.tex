@@ -1,0 +1,120 @@
+\documentclass[11pt]{article}
+\usepackage[total={170mm,230mm}]{geometry}
+
+\usepackage{cmap}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+
+\usepackage{breqn}
+
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{physics}
+\usepackage{wrapfig}
+\usepackage{cancel}
+\usepackage{pdfpages}
+\usepackage{hyperref}
+\newtheorem{definition}{Опредление}[section]
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{axiom}{Аксиома}[section]
+
+\usepackage{pgfplots}
+\pgfplotsset{width=7cm,compat=newest}
+
+\usepackage{amsmath}
+\DeclareMathOperator\arctanh{arctanh}
+
+\usepackage{amsmath}
+\DeclareMathOperator\arccosh{arccosh}
+
+\usepackage{amsmath}
+\DeclareMathOperator\const{const}
+
+\title{Вычисление оператора Лапласа для многослойного перцептрона}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Математическое описание многослойного перцептрона}
+
+Пускай на вход перцептрону подаётся вектор $\vb{x}\in\mathbb{R}^n$, он последовательно линейно преобразуется каждым слоем и в результате на выходе перцептрона имеется вектор $\vb{y}\in\mathbb{R}^m$. Пускай $l$~---~число внутренних слоёв нейронной сети, а на $k$-ом слое имеется $n_k$ нейронов ($n_0=n,\; n_{l+1}=m$). Через $\vb{h}^{(k)}\in\mathbb{R}^{n_k}$ будет обозначаться вектор на выходе с $k$-ого слоя. Используя введённые обозначения можно связать $\vb{x}$ и $\vb{y}$ следующим образом:
+\begin{equation}
+    \begin{split}
+        h^{(0)}_i &= x_i,\quad i=\overline{1,n_0};\\
+        h^{(1)}_i &= f^{(1)}\qty(\sum_{j=1}^{n_0} W^{(1)}_{i,j} h^{(0)}_j + b^{(1)}_i),\quad i=\overline{1,n_1};\\
+        & \ldots\\
+        h^{(k)}_i &= f^{(k)}\qty(\sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} h^{(k-1)}_j + b^{(k)}_i),\quad i=\overline{1,n_k};\\
+        & \ldots\\
+        h^{(l)}_i &= f^{(l)}\qty(\sum_{j=1}^{n_{l-1}} W^{(l)}_{i,j} h^{(l-1)}_j + b^{(l)}_i),\quad i=\overline{1,n_l};\\
+        y_i = h^{(l+1)}_i &= f^{(l+1)}\qty(\sum_{j=1}^{n_{l}} W^{(l+1)}_{i,j} h^{(l)}_j + b^{(l+1)}_i),\quad i=\overline{1,n_{l+1}}.
+    \end{split}
+    \label{eq:perc}
+\end{equation}
+В предыдущей записи функция $f^{(k)}$ называются функцией активации $k$-го слоя, матрица $\hat W^{(k)}$~---~матрицей весов размера $n_k \times n_{k-1}$ (первый индекс~---~номер строки, второй~---~номер столбца), а вектор $b^{(k)}$~---~вектором сдвижки.
+
+\section{Первая производная многослойного перцептрона}
+
+Продифференцируем перцептрон по $x_t,\; t=\overline{1,n_0}$. Из \eqref{eq:perc} и правил взятия сложной производной следует такая схема расчёта
+\begin{equation}
+    \begin{split}
+        &\pdv{y_i}{x_t} = \pdv{h^{(l+1)}_i}{x_t},\quad i=\overline{1,n_{l+1}};        
+        \\
+        & \pdv{h^{(k)}_i}{x_t} = f^{(k)\prime}\qty(\sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} h^{(k-1)}_j + b^{(k)}_i) \cdot \sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} \pdv{h^{(k-1)}_j}{x_t},\quad i=\overline{1,n_k},\; k = \overline{1, l+1};\\
+        & \pdv{h^{(0)}_i}{x_t} = \delta_{i,t},\quad i=\overline{1,n_0}.
+    \end{split}
+\end{equation}
+Можно заметить, что для вычисления производной разумно идти от нижних слоёв к верхним, так как вычисление каждой последующей $\pdv*{h^{(k)}_i}{x_t}$ зависит от значения таких производных на предыдущих слоях.
+
+\section{Лапласиан многослойного перцептрона}
+
+Основываясь на предыдущих результатах и полагая, что вектор $\vb{x}$ дан в $n$-мерной декартовой системе координат, нетрудно получить схему вычисления лапласиана перцептрона, которая имеет следующий вид:
+\begin{equation}
+    \laplacian y_i = \sum_{t=1}^{n_0} \pdv[2]{y_i}{x_t} = \sum_{t=1}^{n_0}\pdv[2]{h^{(l+1)}_i}{x_t},\quad i=\overline{1,n_{l+1}};
+\end{equation}
+\begin{equation}
+    \begin{split}
+        \pdv[2]{h^{(k)}_i}{x_t} = & f^{(k)\prime\prime}\qty(\sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} h^{(k-1)}_j + b^{(k)}_i) \cdot \qty{\sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} \pdv{h^{(k-1)}_j}{x_t}}^2\\
+        &+ f^{(k)\prime}\qty(\sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} h^{(k-1)}_j + b^{(k)}_i) \cdot \sum_{j=1}^{n_{k-1}} W^{(k)}_{i,j} \pdv[2]{h^{(k-1)}_j}{x_t},\quad i=\overline{1,n_k},\; k = \overline{1, l+1};
+    \end{split}
+\end{equation}
+\begin{equation}
+    \pdv[2]{h^{(0)}_i}{x_t} = 0,\quad i=\overline{1,n_0}.
+\end{equation}
+При вычислении лапласиана, как и при вычислении градиента, следует начинать с нижних слоёв.
+
+
+\section{Программная реализация и верификация}
+
+Алгоритм вычисления градиента и лапласиана для многослойного перцептрона был реализован на языке Python с использованием библиотеки PyTorch. Вариант реализации и его верификация, описанная ниже, доступны по \href{https://github.com/MrKozelberg/laplacian_perceptron/blob/main/laplacian.ipynb}{ссылке}.
+
+Для оценки верности работы алгоритмов был рассмотрен пример перцептрона с одним внутренним слоем, содержащим $n$ нейронов. На вход такой нейронной сети подавался вектор $\vb{x}\in\mathbb{R}^n$, что позволило выбрать веса следующими
+\begin{equation}
+ \hat W^{(1)} = \hat I,\quad \hat W^{(2)}_i = 1\; \forall i.
+\end{equation}
+Тогда нетрудно получить выражение результата работы перцептрона по входному вектору
+\begin{equation}
+ y(\vb{x}) = \tanh\qty(\sum_{k=1}^n\tanh\qty(x_k)).
+\end{equation}
+Отсюда можно получить выражение для градиента перцептрона
+\begin{equation}
+ \grad{y} (\vb{x})= \sum_{j=1}^n \cosh^{-2}\qty(\sum_{k=1}^n\tanh\qty(x_k)) \cosh^{-2}(x_j)\; \vb{e}_j,
+\end{equation}
+где вектора $\{ \vb{e}_j\}_{j=1}^n$ образуют стандартный базис в пространстве $\mathbb{R}^n$. Выражение для лапласиана функции $y(\vb{x})$ удаётся записать, используя предыдущие производные
+\begin{equation}
+\begin{split}
+ \laplacian{y} (\vb{x}) = \sum_{i=1}^n \pdv{y}{x_i} \qty(\vb{x})\; \qty(\tanh\qty(x_i) + \dfrac{y(\vb{x})}{\cosh^2(x_i)}).
+\end{split}
+\end{equation}
+Результаты тестирования доступны по \href{https://github.com/MrKozelberg/laplacian_perceptron/blob/main/laplacian.ipynb}{ссылке}. Из них можно заключить, что значение нейронной сети, её градиента и лапласиана вычисляются верно.
+
+
+
+
+
+\end{document}
