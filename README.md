@@ -1,2 +1,2 @@
-# wavefunction_perceptron
-Calculation of the Laplace operator for a multilayer perceptron for further application in problems of quantum mechanics.
+# spectrum_laplace_operator
+Previously, we have learned how to calculate the Laplace operator for a multilayer perceptron. Here we have computed wave-functions and energies of ground states of an electron in an N-dimensional cube for different N (we have looked at N=1,2,3). This task can be understood as the eigenvalues/eigenfunctions problem for the N-dimensional Laplace operator with relevant boundary conditions.
